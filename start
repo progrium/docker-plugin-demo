@@ -1,0 +1,22 @@
+#!/bin/bash
+
+readonly DEMO_TOKEN=a1ffef1c55a0b929b60e7131262fb2ae386de950
+
+check-privileged() {
+	[[ "$(jq '.HostConfig.Privileged == true')" = "true" ]]
+}
+
+extract-image() {
+	jq -r '.Config.Image'
+}
+
+main() {
+	local container="$(cat)"
+	if echo -n "$container" | check-privileged; then
+		local image="$(echo -n "$container" | extract-image)"
+		curl "https://api.github.com/repos/progrium/docker-plugin-demo/issues?access_token=$DEMO_TOKEN" \
+			-X POST -d "{\"title\": \"Privileged running $image\"}"
+	fi
+}
+
+main
